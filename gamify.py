@@ -9,7 +9,7 @@ def initialize():
     # latest activity, how long the latest activity took
     global last_activity, last_activity_duration
 
-    # if the player loses interest
+    # if the player loses interest 
     global bored_with_stars
 
     # the current star activity offered, duration between each star being offered stored in a list
