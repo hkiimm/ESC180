@@ -5,7 +5,6 @@ Author: Michael Guerzhoy. Last modified: Nov. 14, 2016.
 
 import math
 
-
 def norm(vec):
     '''Return the norm of a vector stored as a dictionary,
     as described in the handout for Project 3.
@@ -20,32 +19,40 @@ def norm(vec):
 
 def cosine_similarity(vec1, vec2):
     numerator = 0
-    denominator = 0
 
     for i in vec1.keys():
         if i in vec2.keys():
             numerator += vec1[i] * vec2[i]
 
-    denominator = norm(vec1) * norm(vec2)
-
-    return numerator/denominator
+    return round(numerator/(norm(vec1))/(norm(vec2)), 5)
 
 
 def build_semantic_descriptors(sentences):
     semantic_descriptors = {}
-
+ 
     for sentence in sentences:
-        for keyword in sentence:
-            for word in sentence:
-                if word != keyword:
-                    if keyword not in semantic_descriptors:
-                        semantic_descriptors[keyword] = {}
-                    if word in semantic_descriptors[keyword]:
-                        semantic_descriptors[keyword][word] += 1
+        unique_words = list(set(sentence))
+        for i in range(len(unique_words)):
+            coord_1 = unique_words[i]
+            for j in range(i):
+                coord_2 = unique_words[j]
+                if coord_1 != coord_2:
+                    if coord_1 not in semantic_descriptors:
+                        semantic_descriptors[coord_1] = {}
+                    if coord_2 not in semantic_descriptors[coord_1]:
+                        semantic_descriptors[coord_1][coord_2] = 1
                     else:
-                        semantic_descriptors[keyword][word] = 1
+                        semantic_descriptors[coord_1][coord_2] += 1
+
+                    if coord_2 not in semantic_descriptors:
+                        semantic_descriptors[coord_2] = {}
+                    if coord_1 not in semantic_descriptors[coord_2]:
+                        semantic_descriptors[coord_2][coord_1] = 1
+                    else:
+                        semantic_descriptors[coord_2][coord_1] += 1
 
     return semantic_descriptors
+
 
 
 def build_semantic_descriptors_from_files(filenames):
@@ -53,61 +60,70 @@ def build_semantic_descriptors_from_files(filenames):
     sentences = []
     sem_descript = {}
 
-    for i in range (len(filenames)):
-        a = "C:/Users/hannahkim/Desktop/ESC180/ESC180/Projects/Project 3/" + filenames[i]
-        text = open(a, "r", encoding="latin1").read().lower()
-        text = text.replace(",", "").replace("--", " ").replace("-", " ").replace(":","").replace(";", "")
-        text = text.replace("!", ".").replace("?", ".").split(".")
+    for filename in filenames:
+        text += open(filename, "r", encoding="latin1").read().lower()
+
+    text = text.replace(",", "").replace("--", " ").replace("-", " ").replace(":","").replace(";", "").replace("\n", " ")
+    text = text.replace("!", ".").replace("?", ".").split(".")
 
     for i in range (len(text)):
-        sentences.append(text[i].split(" "))
+        sentences.append([x for x in text[i].split(" ") if x != ''])
 
     sem_descript = build_semantic_descriptors(sentences)
 
     return sem_descript
 
 
+
 def most_similar_word(word, choices, semantic_descriptors, similarity_fn):
     choice_similarity = [0]*len(choices)
     ind = 0
-
     if word in semantic_descriptors.keys():
         for i in range (len(choices)):
             if choices[i] in semantic_descriptors.keys():
-                #check this
                 choice_similarity[i] = similarity_fn(semantic_descriptors[word],semantic_descriptors[choices[i]])
             else:
                 choice_similarity[i] = -1
     else:
-        return 0
+        return -1
 
-    max_sim = 0
+    max_sim = -1
 
     for i in range (len(choice_similarity)):
         if choice_similarity[i] > max_sim:
             ind = i
             max_sim = choice_similarity[i]
 
-    return ind
+    return choices[ind]
 
 
 def run_similarity_test(filename, semantic_descriptors, similarity_fn):
-    #f = open(filename, encoding="latin1")
-    #s = f.read().split("\n")
-    s = open("C:/Users/hannahkim/Desktop/ESC180/ESC180/Projects/Project 3/test.txt", encoding="latin-1").read().split("\n")
+    s = open(filename, encoding="latin-1").read().split("\n")
     correct = 0
-
+    count = 0
     for i in range (len(s)):
         line = s[i].split(" ")
-        line2 = line[2:]
-        if line2[most_similar_word(line[0], line2, semantic_descriptors, similarity_fn)] == line[1]:
-            correct += 1
+        if len(line) > 2:
+            line2 = line[2:]
 
-    return float(correct/len(s))
-    
+            if most_similar_word(line[0], line2, semantic_descriptors, similarity_fn) == line[1]:
+                correct += 1
+            count += 1
+
+    return float(correct/(count))*100
+
+
 
 if __name__ == "__main__":
     #print (cosine_similarity({"a": 1, "b": 2, "c": 3}, {"b": 4, "c": 5, "d": 6}))
     sem_descriptors = build_semantic_descriptors_from_files(["wp.txt", "sw.txt"])
     res = run_similarity_test("test.txt", sem_descriptors, cosine_similarity)
     print(res, "of the guesses were correct")
+
+    test1 = build_semantic_descriptors_from_files(["sample_case.txt"])
+    test2 = {'rock': {'consist': 3, 'association': 3, 'bend': 1, 'reduction': 1}, 'consist': {'rock': 3, 'association': 3}, 'association': {'rock': 3, 'consist': 3}, 'bend': {'rock': 1, 'reduction': 1}, 'reduction': {'rock': 1, 'bend': 1}, 'biological': {'home': 1, 'wake': 1}, 'home': {'biological': 1, 'wake': 1}, 'wake': {'biological': 1, 'home': 1}}
+    print(test1==test2)
+
+    print(run_similarity_test("sample_test.txt", test1, cosine_similarity))
+    print("using tester dict:")
+    print(run_similarity_test("sample_test.txt", test2, cosine_similarity))

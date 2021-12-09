@@ -42,8 +42,8 @@ def is_balanced(s):
 
 
 if __name__ == "__main__":
-    #print (power(2,5))
+    #print (power(3,3))
     #print (interleave([1,2],[3,4]))
     #print (reverse_rec([1,2,3,4,5]))
     #print (zigzag1([3,6,9,12,15]))
-    print (is_balanced("(()(()))"))
+    #print (is_balanced("(()(()))"))
