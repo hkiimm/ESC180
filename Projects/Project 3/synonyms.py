@@ -119,11 +119,3 @@ if __name__ == "__main__":
     sem_descriptors = build_semantic_descriptors_from_files(["wp.txt", "sw.txt"])
     res = run_similarity_test("test.txt", sem_descriptors, cosine_similarity)
     print(res, "of the guesses were correct")
-
-    test1 = build_semantic_descriptors_from_files(["sample_case.txt"])
-    test2 = {'rock': {'consist': 3, 'association': 3, 'bend': 1, 'reduction': 1}, 'consist': {'rock': 3, 'association': 3}, 'association': {'rock': 3, 'consist': 3}, 'bend': {'rock': 1, 'reduction': 1}, 'reduction': {'rock': 1, 'bend': 1}, 'biological': {'home': 1, 'wake': 1}, 'home': {'biological': 1, 'wake': 1}, 'wake': {'biological': 1, 'home': 1}}
-    print(test1==test2)
-
-    print(run_similarity_test("sample_test.txt", test1, cosine_similarity))
-    print("using tester dict:")
-    print(run_similarity_test("sample_test.txt", test2, cosine_similarity))
